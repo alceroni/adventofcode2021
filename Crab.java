@@ -5,6 +5,7 @@
 import org.apache.commons.lang3.tuple.Pair;
 
 import static java.util.Arrays.stream;
+import static java.util.Comparator.comparing;
 import static java.util.stream.IntStream.range;
 
 public class Crab {
@@ -70,24 +71,23 @@ public class Crab {
 		long[] costs = new long[max + 1];
 		stream(initialPositions).forEach(position -> {
 			range(0, max + 1).forEach(i -> {
-				var dist = Math.abs(position - i);
-				if (quadratic) {
-					costs[i] += (long) dist * (dist + 1) / 2;
-				} else {
-					costs[i] += dist;
-				}
+				costs[i] += computeCost(quadratic, position, i);
 			});
 		});
 
-		int minIndex = 0;
-		long minValue = costs[0];
-		for (int i = 1; i <= max; i++) {
-			if (costs[i] < minValue) {
-				minIndex = i;
-				minValue = costs[i];
-			}
+		return range(0, max + 1)
+				.mapToObj(i -> Pair.of(i, costs[i]))
+				.min(comparing(Pair::getRight))
+				.orElseThrow();
+	}
+
+	private static long computeCost(boolean quadratic, int position, int i) {
+		var dist = Math.abs(position - i);
+		if (quadratic) {
+			return (long) dist * (dist + 1) / 2;
+		} else {
+			return dist;
 		}
-		return Pair.of(minIndex, minValue);
 	}
 
 	public static void main(String[] args) {
